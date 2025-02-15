@@ -19,7 +19,7 @@ def process_depth():
         return jsonify({'error': 'No file uploaded'}), 400
 
     # Read depth map
-    depth_map = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_UNCHANGED)
+    depth_map = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
 
     # Convert depth map to 3D point cloud
     h, w = depth_map.shape
