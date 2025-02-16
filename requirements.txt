@@ -1,0 +1,10 @@
+torch
+torchvision
+torchaudio
+diffusers
+transformers
+accelerate
+opencv-python
+numpy
+open3d
+timm
