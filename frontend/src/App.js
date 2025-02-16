@@ -8,16 +8,14 @@ import * as THREE from 'three';
 function PointCloudViewer({ plyUrl }) {
     console.log("Fetching PLY file from:", plyUrl);
 
-    // Use Three.js PLYLoader to load the point cloud
     const geometry = useLoader(PLYLoader, plyUrl);
-
     const materialRef = useRef();
 
     useEffect(() => {
         if (geometry) {
             console.log("PLY Geometry Loaded:", geometry);
 
-            // Ensure the geometry is centered for visibility
+            // Center the point cloud
             geometry.computeBoundingBox();
             const center = new THREE.Vector3();
             geometry.boundingBox.getCenter(center);
@@ -34,7 +32,6 @@ function PointCloudViewer({ plyUrl }) {
         <p>Loading point cloud...</p>
     );
 }
-
 
 function App() {
     const [message, setMessage] = useState('');
@@ -82,8 +79,16 @@ function App() {
             <h2>{message}</h2>
 
             {pointCloudFile && (
-                <div style={{ width: "80vw", height: "80vh", margin: "auto" }}>
-                    <Canvas camera={{ position: [0, 0, 50], fov: 75 }}>
+                <div style={{
+                    width: "80vw",
+                    height: "80vh",
+                    margin: "auto",
+                    border: "3px solid black",  
+                    borderRadius: "10px",        
+                    padding: "10px",            
+                    boxShadow: "5px 5px 15px rgba(0, 0, 0, 0.2)", 
+                }}>
+                    <Canvas camera={{ position: [0, 0, 750], fov: 75 }}> 
                         <ambientLight intensity={1.0} />
                         <directionalLight position={[10, 10, 10]} />
                         <PointCloudViewer plyUrl={pointCloudFile} />
