@@ -8,19 +8,20 @@ import * as THREE from 'three';
 function PointCloudViewer({ plyUrl }) {
     console.log("Fetching PLY file from:", plyUrl);
 
-    const geometry = useLoader(PLYLoader, plyUrl, (loader) => {
-        loader.setProperty('normalize', true); // Ensures correct scaling
-    });
+    // Use Three.js PLYLoader to load the point cloud
+    const geometry = useLoader(PLYLoader, plyUrl);
 
     const materialRef = useRef();
 
     useEffect(() => {
-        console.log("PLY Geometry Loaded:", geometry);
+        if (geometry) {
+            console.log("PLY Geometry Loaded:", geometry);
 
-        if (geometry && geometry.attributes) {
-            console.log("Geometry Attributes:", geometry.attributes);
-        } else {
-            console.error("PLY file did not load properly.");
+            // Ensure the geometry is centered for visibility
+            geometry.computeBoundingBox();
+            const center = new THREE.Vector3();
+            geometry.boundingBox.getCenter(center);
+            geometry.translate(-center.x, -center.y, -center.z);
         }
     }, [geometry]);
 
@@ -33,6 +34,7 @@ function PointCloudViewer({ plyUrl }) {
         <p>Loading point cloud...</p>
     );
 }
+
 
 function App() {
     const [message, setMessage] = useState('');
