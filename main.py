@@ -24,6 +24,9 @@ def process_depth():
     if depth_map is None:
         return jsonify({'error': 'Failed to decode image. Ensure it is a valid depth map PNG.'}), 400
 
+    # ✅ Flip the depth map vertically to correct orientation
+    depth_map = cv2.flip(depth_map, 0)  # 0 = Flip vertically
+
     # Convert depth map to 3D point cloud
     h, w = depth_map.shape
     points = []
