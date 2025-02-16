@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import base64
+import subprocess
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
@@ -20,10 +21,19 @@ def upload_image():
     # Decode base64 and save as an image
     try:
         image_data = image_data.split(",")[1]  # Remove base64 header
-        with open("saved_drawing.png", "wb") as f:
+        image_path = "saved_drawing.png"
+        with open(image_path, "wb") as f:
             f.write(base64.b64decode(image_data))
 
-        return jsonify({"message": "Image saved successfully!"})
+        # Call your script after saving the image
+        result = subprocess.run(["python3", "midas.py", image_path], capture_output=True, text=True)
+
+        if result.returncode == 0:
+            print("Script executed successfully:", result.stdout)
+            return jsonify({"message": "Image saved and script executed successfully!"})
+        else:
+            print("Error in script execution:", result.stderr)
+            return jsonify({"error": f"Script execution failed: {result.stderr}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
