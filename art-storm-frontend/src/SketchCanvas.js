@@ -77,12 +77,23 @@ const SketchCanvas = () => {
   };
 
   return (
-    <div style={{ textAlign: "center" }}>
-      <h2>Draw Something!</h2>
+    <div style={{ textAlign: "center", backgroundColor: "#DC143C", minHeight: "100vh", padding: "20px" }}>
+      {/*Title Header */}
+      <h1 style={{ color: "white", fontSize: "50px", marginBottom: "5px" }}>
+        CrimsonCode 2025
+      </h1>
 
-      {/* Brush Size Slider */}
+      {/*Subtext */}
+      <h3 style={{ color: "white", fontSize: "22px", marginBottom: "20px" }}>
+        Crimson Cowboys - Art Storm Sketch App
+      </h3>
+
+      {/*Draw Something Header */}
+      <h2 style={{ color: "white", marginBottom: "15px" }}>Draw Something!</h2>
+
+      {/*Brush Size Slider */}
       <div style={{ marginBottom: "10px" }}>
-        <label>Brush Size: {brushSize}px</label>
+        <label style={{ color: "white" }}>Brush Size: {brushSize}px</label>
         <input
           type="range"
           min="1"
@@ -92,22 +103,23 @@ const SketchCanvas = () => {
         />
       </div>
 
-      {/* Drawing Canvas with Outline */}
+      {/*Drawing Canvas with Black Background */}
       <div
         style={{
-          border: "3px solid black",
+          border: "3px solid white",
           display: "inline-block",
           marginTop: "10px",
           padding: "5px",
+          backgroundColor: "black",
         }}
       >
         <canvas ref={canvasRef}></canvas>
       </div>
 
-      {/* Action Buttons */}
+      {/*Action Buttons */}
       <div style={{ marginTop: "10px" }}>
         <button onClick={clearCanvas} style={{ margin: "10px" }}>Clear Canvas</button>
-        <button onClick={saveDrawing} style={{ margin: "10px" }}>Save Drawing</button>
+        <button onClick={saveDrawing} style={{ margin: "10px" }}>Process Drawing</button>
       </div>
     </div>
   );
