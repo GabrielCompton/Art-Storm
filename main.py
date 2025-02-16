@@ -21,6 +21,9 @@ def process_depth():
     # Read depth map
     depth_map = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
 
+    if depth_map is None:
+        return jsonify({'error': 'Failed to decode image. Ensure it is a valid depth map PNG.'}), 400
+
     # Convert depth map to 3D point cloud
     h, w = depth_map.shape
     points = []
@@ -31,6 +34,9 @@ def process_depth():
             if z > 0:
                 points.append([x, y, z])
 
+    if not points:
+        return jsonify({'error': 'Depth map contains no valid depth information.'}), 400
+
     # Create Open3D point cloud
     pc = o3d.geometry.PointCloud()
     pc.points = o3d.utility.Vector3dVector(points)
@@ -40,7 +46,8 @@ def process_depth():
     output_path = os.path.join(STATIC_FOLDER, output_filename)
     o3d.io.write_point_cloud(output_path, pc)
 
-    return jsonify({'message': 'Point cloud generated successfully!', 'output': output_filename})
+    return jsonify({'message': 'Point cloud generated successfully!',
+                    'output': f'http://127.0.0.1:5000/static/{output_filename}'})
 
 @app.route('/static/<path:filename>')
 def download_file(filename):
