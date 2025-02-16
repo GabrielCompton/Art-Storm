@@ -1,12 +1,44 @@
 import React, { useEffect, useRef, useState } from "react";
-import { fabric } from "fabric";
-import { Canvas, PencilBrush, CircleBrush, PatternBrush, SprayBrush } from "fabric";
+import { Canvas, PencilBrush, CircleBrush, PatternBrush, SprayBrush, Image } from "fabric";
+import axios from 'axios';
+import { Canvas as ThreeCanvas, useLoader } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader';
+import * as THREE from 'three';
+
+const PointCloudViewer = ({ plyUrl }) => {
+    const geometry = useLoader(PLYLoader, plyUrl);
+    const materialRef = useRef();
+
+    useEffect(() => {
+        if (geometry) {
+            geometry.computeBoundingBox();
+            const center = new THREE.Vector3();
+            geometry.boundingBox.getCenter(center);
+            geometry.translate(-center.x, -center.y, -center.z);
+        }
+    }, [geometry]);
+
+    return geometry ? (
+        <points>
+            <bufferGeometry attach="geometry" {...geometry} />
+            <pointsMaterial ref={materialRef} size={2} color="cyan" />
+        </points>
+    ) : (
+        <p>Loading point cloud...</p>
+    );
+};
 
 const SketchCanvas = () => {
   const canvasRef = useRef(null);
   const fabricCanvasRef = useRef(null);
   const [brushSize, setBrushSize] = useState(5);
   const [brushType, setBrushType] = useState("PencilBrush");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [processedImageUrl, setProcessedImageUrl] = useState('');
+  const [pointCloudFile, setPointCloudFile] = useState(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -45,17 +77,16 @@ const SketchCanvas = () => {
     }
   };
 
-  //Handle bush type change
+  // Handle brush type change
   const handleBrushTypeChange = (event) => {
     const newBrush = event.target.value;
     setBrushType(newBrush);
-    if (fabricCanvasRef.current)
-    {
+    if (fabricCanvasRef.current) {
       updateBrush(fabricCanvasRef.current, newBrush, brushSize);
     }
   };
 
-  //Update brush type
+  // Update brush type
   const updateBrush = (canvas, brushName, size) => {
     let brush;
     switch (brushName) {
@@ -120,6 +151,37 @@ const SketchCanvas = () => {
     }
   };
 
+  // Handle file change
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  // Handle file upload to backend
+  const handleUpload = () => {
+    if (!selectedFile) {
+      setMessage('Please select a file first.');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
+    setPointCloudFile(null);
+
+    const formData = new FormData();
+    formData.append('depth_map', selectedFile);
+
+    axios.post('http://127.0.0.1:5000/api/process-depth', formData)
+      .then(response => {
+        setMessage(response.data.message);
+        setPointCloudFile(response.data.output);
+      })
+      .catch(error => {
+        console.error('Error uploading file:', error);
+        setMessage('Error processing file.');
+      })
+      .finally(() => setLoading(false));
+  };
+
   return (
     <div style={{ textAlign: "center", backgroundColor: "#DC143C", minHeight: "100vh", padding: "20px" }}>
       {/*Title Header */}
@@ -176,6 +238,43 @@ const SketchCanvas = () => {
         <button onClick={clearCanvas} style={{ margin: "10px" }}>Clear Canvas</button>
         <button onClick={saveDrawing} style={{ margin: "10px" }}>Process Drawing</button>
       </div>
+
+      {/*File Upload */}
+      <div style={{ marginTop: "10px" }}>
+        <input type="file" accept="image/png" onChange={handleFileChange} />
+        <button onClick={handleUpload} style={{ margin: "10px" }} disabled={loading}>
+          {loading ? 'Processing...' : 'Upload and Process'}
+        </button>
+      </div>
+      <h2>{message}</h2>
+
+      {/* Display Processed Image */}
+      {processedImageUrl && (
+        <div style={{ marginTop: "20px" }}>
+          <h2 style={{ color: "white" }}>Processed Image:</h2>
+          <img src={processedImageUrl} alt="Processed" style={{ border: "3px solid white" }} />
+        </div>
+      )}
+
+      {/* Display Point Cloud */}
+      {pointCloudFile && (
+        <div style={{
+          width: "80vw",
+          height: "80vh",
+          margin: "auto",
+          border: "3px solid black",
+          borderRadius: "10px",
+          padding: "10px",
+          boxShadow: "5px 5px 15px rgba(0, 0, 0, 0.2)",
+        }}>
+          <ThreeCanvas camera={{ position: [0, 0, 750], fov: 75 }}>
+            <ambientLight intensity={1.0} />
+            <directionalLight position={[10, 10, 10]} />
+            <PointCloudViewer plyUrl={pointCloudFile} />
+            <OrbitControls />
+          </ThreeCanvas>
+        </div>
+      )}
     </div>
   );
 };
