@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
-import { Canvas, PencilBrush } from "fabric";
+import { Canvas, PencilBrush, CircleBrush, PatternBrush, SprayBrush } from "fabric";
 
 const SketchCanvas = () => {
   const canvasRef = useRef(null);
   const fabricCanvasRef = useRef(null);
   const [brushSize, setBrushSize] = useState(5);
+  const [brushType, setBrushType] = useState("PencilBrush");
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -42,6 +43,49 @@ const SketchCanvas = () => {
       fabricCanvasRef.current.freeDrawingBrush.width = newSize;
       fabricCanvasRef.current.backgroundColor = "black";
     }
+  };
+
+  //Handle bush type change
+  const handleBrushTypeChange = (event) => {
+    const newBrush = event.target.value;
+    setBrushType(newBrush);
+    if (fabricCanvasRef.current)
+    {
+      updateBrush(fabricCanvasRef.current, newBrush, brushSize);
+    }
+  };
+
+  //Update brush type
+  const updateBrush = (canvas, brushName, size) => {
+    let brush;
+    switch (brushName) {
+      case "PencilBrush":
+        brush = new PencilBrush(canvas);
+        break;
+      case "CircleBrush":
+        brush = new CircleBrush(canvas);
+        break;
+      case "SprayBrush":
+        brush = new SprayBrush(canvas);
+        brush.density = 20;
+        break;
+      case "PatternBrush":
+        brush = new PatternBrush(canvas);
+        brush.getPatternSrc = () => {
+          const patternCanvas = document.createElement("canvas");
+          patternCanvas.width = patternCanvas.height = 10;
+          const ctx = patternCanvas.getContext("2d");
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, 10, 10);
+          return patternCanvas;
+        };
+        break;
+      default:
+        brush = new PencilBrush(canvas);
+    }
+    brush.color = "white";
+    brush.width = size;
+    canvas.freeDrawingBrush = brush;
   };
 
   // Clear the canvas
@@ -101,6 +145,17 @@ const SketchCanvas = () => {
           value={brushSize}
           onChange={handleBrushSizeChange}
         />
+      </div>
+
+      {/*Brush Type Selector */}
+      <div style={{ marginBottom: "15px" }}>
+        <label style={{ color: "white", marginRight: "10px" }}>Select Brush:</label>
+        <select value={brushType} onChange={handleBrushTypeChange}>
+          <option value="PencilBrush">Pencil</option>
+          <option value="CircleBrush">Circle</option>
+          <option value="SprayBrush">Spray</option>
+          <option value="PatternBrush">Pattern</option>
+        </select>
       </div>
 
       {/*Drawing Canvas with Black Background */}
