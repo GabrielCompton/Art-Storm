@@ -133,21 +133,32 @@ const SketchCanvas = () => {
       const imageData = fabricCanvasRef.current.toDataURL("image/png"); // Convert to PNG
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/upload", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ image: imageData }),
-        });
-
-        const result = await response.json();
-        console.log("Server Response:", result);
-        alert("Drawing saved successfully!");
+        const response = await uploadImage(imageData);
+        console.log("Server Response:", response);
+        alert("Drawing processed successfully!");
       } catch (error) {
-        console.error("Error saving drawing:", error);
-        alert("Failed to save drawing.");
+        console.error("Error processing drawing:", error);
+        alert("Failed to process drawing.");
       }
+    }
+  };
+
+  // Upload image to backend
+  const uploadImage = async (imageData) => {
+    const formData = new FormData();
+    formData.append('image', imageData);
+
+    const response = await fetch('/depth_estimation/upload', {
+        method: 'POST',
+        body: formData
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        console.log('Depth map:', data.depth_map);
+        return data;
+    } else {
+        throw new Error('Error uploading image:', response.statusText);
     }
   };
 
