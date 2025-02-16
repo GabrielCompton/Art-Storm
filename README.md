@@ -7,7 +7,7 @@ A hackathon application that allows users to draw an image and utilizes AI to en
 
 1. **Clone the repository**  
    ```sh
-   git clone <repo_url>
+   git clone https://github.com/GabrielCompton/Art-Storm.git
    cd Art-Storm
    ```
 2. switch to stable version of App
