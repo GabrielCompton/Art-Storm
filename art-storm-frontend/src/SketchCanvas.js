@@ -22,8 +22,10 @@ const SketchCanvas = () => {
 
     // Enable drawing mode
     fabricCanvas.isDrawingMode = true;
+    fabricCanvas.backgroundColor = "black";
+    fabricCanvas.renderAll();
     fabricCanvas.freeDrawingBrush = new PencilBrush(fabricCanvas);
-    fabricCanvas.freeDrawingBrush.color = "black";
+    fabricCanvas.freeDrawingBrush.color = "white";
     fabricCanvas.freeDrawingBrush.width = brushSize;
 
     return () => {
@@ -38,6 +40,7 @@ const SketchCanvas = () => {
 
     if (fabricCanvasRef.current) {
       fabricCanvasRef.current.freeDrawingBrush.width = newSize;
+      fabricCanvasRef.current.backgroundColor = "black";
     }
   };
 
@@ -45,6 +48,7 @@ const SketchCanvas = () => {
   const clearCanvas = () => {
     if (fabricCanvasRef.current) {
       fabricCanvasRef.current.clear();
+      fabricCanvasRef.current.backgroundColor = "black";
     }
   };
 
