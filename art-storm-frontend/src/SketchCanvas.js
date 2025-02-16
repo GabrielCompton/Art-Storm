@@ -131,18 +131,25 @@ const SketchCanvas = () => {
   const saveDrawing = async () => {
     if (fabricCanvasRef.current) {
       const imageData = fabricCanvasRef.current.toDataURL("image/png"); // Convert to PNG
-
-      try {
-        const response = await uploadImage(imageData);
-        console.log("Server Response:", response);
-        alert("Drawing processed successfully!");
-      } catch (error) {
-        console.error("Error processing drawing:", error);
-        alert("Failed to process drawing.");
+  
+      // Convert base64 to Blob
+      const byteString = atob(imageData.split(',')[1]);
+      const mimeString = imageData.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
       }
+      const blob = new Blob([ab], { type: mimeString });
+  
+      // Set the blob as the selected file
+      const file = new File([blob], "drawing.png", { type: mimeString });
+      setSelectedFile(file);
+  
+      // Call handleUpload to process the drawing
+      handleUpload();
     }
   };
-
   // Upload image to backend
   const uploadImage = async (imageData) => {
     const formData = new FormData();
